@@ -5,7 +5,10 @@
  * <a href="https://github.com/processing/p5.js/wiki/Local-server">local server</a>.
  */
 let mySound;
-let isLooping=false;
+let tree;
+let polySynth;
+let isLooping = false;
+let isPlaying = false;
 let inputVideo, outputVideo, inputAnalysis, outputAnalysis;
 let frameWidth = 320;
 let frameHeight = 240;
@@ -14,9 +17,10 @@ let predictions = [];
 let oldprediction;
 let okeypoint = {};
 
-function preload() {
+window.preload = () => {
   soundFormats('mp3', 'ogg', 'wav', 'm4a');
-  mySound = loadSound("/assets/1")
+  mySound = loadSound("/assets/1", () => {console.log("loaded audio");});
+  tree = loadImage("https://loremflickr.com/320/240/tree", () => {console.log("loaded flickr");});
 }
 
 function setup() {
@@ -49,6 +53,7 @@ function setup() {
     predictions = results;
   });
   background(150);
+  polySynth = new p5.PolySynth();
 }
 
 function draw() {
@@ -59,7 +64,8 @@ function draw() {
   filter(GRAY);
   pop();
   image(inputVideo, 320, 0); // SCREEN 2
-  image(outputAnalysis, 320, 240); // SCREEN 4
+  image(tree
+    , 320, 240); // SCREEN 4
   //filter(POSTERIZE, 2);
   drawHandpoints();
 }
@@ -69,28 +75,36 @@ function modelReady() {
 }
 
 function mousePressed() {
-  mySound.play()
+  //mySound.play()
   if(isLooping){
     inputVideo.noLoop(); // set the video to loop and start playing
-  outputVideo.noLoop(); // set the video to loop and start playing
-  inputAnalysis.noLoop(); // set the video to loop and start playing
-  outputAnalysis.noLoop(); // set the video to loop and start playing
+    outputVideo.noLoop(); // set the video to loop and start playing
+    inputAnalysis.noLoop(); // set the video to loop and start playing
+    outputAnalysis.noLoop(); // set the video to loop and start playing
     isLooping = false;
     
   } else {
-  inputVideo.loop(); // set the video to loop and start playing
-  outputVideo.loop(); // set the video to loop and start playing
-  inputAnalysis.loop(); // set the video to loop and start playing
-  outputAnalysis.loop(); // set the video to loop and start playing
-  isLooping = true;
+    inputVideo.loop(); // set the video to loop and start playing
+    outputVideo.loop(); // set the video to loop and start playing
+    inputAnalysis.loop(); // set the video to loop and start playing
+    outputAnalysis.loop(); // set the video to loop and start playing
+    isLooping = true;
   }
 }
 
 function keyTyped() {
   if (key === 'a') {
     mySound.play();
+    isPlaying = true;
   } else if (key === 's') {
     mySound.pause();
+    isPlaying = false;
+  } else if (key === "l") {
+    saveFrames('out', 'png', 1, 16, data => {
+      print(data);
+    });
+  } else if (key === 'c') {
+    outputVideo.time(0);
   }
   // uncomment to prevent any default behavior
   // return false;
@@ -114,7 +128,30 @@ function drawHandpoints() {
             line(keypoint[0] * 0.5 + 320, keypoint[1] * 0.5, okeypoint[0] * 0.5 + 320, okeypoint[1] * 0.5)
           pop();
         }
+        playSynth(okeypoint[0], okeypoint[1])
       oldprediction = prediction;
   }
+  if (predictions.length > 0) {
+    if (isPlaying == false) {
+      mySound.play();
+      isPlaying = true;
+    }
+  } else {
+    if (isPlaying == true) {
+      mySound.pause();
+      isPlaying = false;
+    }
+  }
+}
+
+function playSynth(note, vel) {
+  userStartAudio();
+  // note duration (in seconds)
+  let dur = 1.5;
+  // time from now (in seconds)
+  let time = 0;
+  // velocity (volume, from 0 to 1)
+  // notes can overlap with each other
+  polySynth.play(note * 0.5, vel/240, time, dur);
 }
 
