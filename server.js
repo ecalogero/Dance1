@@ -8,7 +8,7 @@ var enforce = require('express-sslify');
 var port = process.env.PORT || 8000;
 
 // set the view engine to ejs
-app.set('view engine', 'ejs');
+//app.set('view engine', 'ejs');
 
 // Because we are behind a load balancer in Heroku, we use {trustProtoHeader: true}
 app.use(enforce.HTTPS({ trustProtoHeader: true }))
