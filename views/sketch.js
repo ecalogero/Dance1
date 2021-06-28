@@ -19,7 +19,7 @@ let okeypoint = {};
 
 window.preload = () => {
   soundFormats('mp3', 'ogg', 'wav', 'm4a');
-  mySound = loadSound("/assets/1", () => {console.log("loaded audio");});
+  mySound = loadSound("/1", () => {console.log("loaded audio");});
   tree = loadImage("https://loremflickr.com/320/240/tree", () => {console.log("loaded flickr");});
 }
 
@@ -39,11 +39,11 @@ function setup() {
   inputVideo.elt.setAttribute('playsinline', '');
   inputVideo.size(320,240);
   inputVideo.hide();
-  outputVideo = createVideo(["assets/fingers.mov", "assets/fingers.webm"]);
+  outputVideo = createVideo(["./fingers.mov", "assets/fingers.webm"]);
   outputVideo.hide();
-  inputAnalysis = createVideo(["assets/fingers.mov", "assets/fingers.webm"]);
+  inputAnalysis = createVideo(["./fingers.mov", "assets/fingers.webm"]);
   inputAnalysis.hide();
-  outputAnalysis = createVideo(["assets/fingers.mov", "assets/fingers.webm"]);
+  outputAnalysis = createVideo(["./fingers.mov", "assets/fingers.webm"]);
   outputAnalysis.hide();
 
   handpose = ml5.handpose(inputVideo, modelReady);
