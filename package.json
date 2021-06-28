@@ -1,0 +1,24 @@
+{
+  "name": "video_p5",
+  "version": "1.0.0",
+  "description": "an interactive gesture recognition video",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ecalogero/Video_p5.git"
+  },
+  "author": "Erica Calogero",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ecalogero/Video_p5/issues"
+  },
+  "homepage": "https://github.com/ecalogero/Video_p5#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-sslify": "^1.2.0"
+  }
+}

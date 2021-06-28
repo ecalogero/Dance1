@@ -149,9 +149,10 @@ function playSynth(note, vel) {
   // note duration (in seconds)
   let dur = 1.5;
   // time from now (in seconds)
-  let time = 0;
+  //let time = 0;
   // velocity (volume, from 0 to 1)
+  let root = note * 0.5 + 50;
   // notes can overlap with each other
-  polySynth.play(note * 0.5, vel/240, time, dur);
+  polySynth.play(root, vel/240, 0, dur);
 }
 
