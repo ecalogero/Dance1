@@ -14,7 +14,7 @@ app.set('view engine', 'ejs');
 app.use(enforce.HTTPS({ trustProtoHeader: true }))
 
 // make express look in the public directory for assets (css/js/img)
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/views'));
 
 // set the home page route
 app.get('/', function(req, res) {
