@@ -11,7 +11,7 @@ var port = process.env.PORT || 8000;
 app.set('view engine', 'ejs');
 
 // Because we are behind a load balancer in Heroku, we use {trustProtoHeader: true}
-//app.use(enforce.HTTPS({ trustProtoHeader: true }))
+app.use(enforce.HTTPS({ trustProtoHeader: true }))
 
 // make express look in the public directory for assets (css/js/img)
 app.use(express.static(__dirname + '/views'));
