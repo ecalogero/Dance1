@@ -10,9 +10,9 @@ let polySynth;
 let isLooping = false;
 let isPlaying = false;
 let inputVideo, outputVideo, inputAnalysis, outputAnalysis;
-let frameWidth = 320;
-let frameHeight = 240;
-let handpose;
+let frameWidth = innerWidth/2;//320;
+let frameHeight = innerHeight/2;//240;
+let handpose, bodypose;
 let predictions = [];
 let oldprediction;
 let okeypoint = {};
@@ -37,7 +37,8 @@ function setup() {
   //   console.log('capture ready.')
   // });
   inputVideo.elt.setAttribute('playsinline', '');
-  inputVideo.size(320,240);
+  inputVideo.size(frameWidth,frameHeight
+    );
   inputVideo.hide();
   outputVideo = createVideo(["./fingers.mov", "assets/fingers.webm"]);
   outputVideo.hide();
@@ -46,11 +47,19 @@ function setup() {
   outputAnalysis = createVideo(["./fingers.mov", "assets/fingers.webm"]);
   outputAnalysis.hide();
 
-  handpose = ml5.handpose(inputVideo, modelReady);
+  //This creates the hand model using the ml5 library
+  //handpose = ml5.handpose(inputVideo, modelReady);
+  
+  //Here is the one to track a body instead of a hand.
+  bodypose = ml5.poseNet(inputVideo, single, modelReady);
   // This sets up an event that fills the global variable "predictions"
     // with an array every time new hand poses are detected
-  handpose.on("predict", results => {
-    predictions = results;
+  // handpose.on("pose", results => {
+  //   predictions = results;
+  // });
+  bodypose.on("pose", results => {
+    pose = results;
+    console.log(results);
   });
   background(150);
   polySynth = new p5.PolySynth();
@@ -67,7 +76,9 @@ function draw() {
   image(tree
     , 320, 240); // SCREEN 4
   //filter(POSTERIZE, 2);
-  drawHandpoints();
+  //drawHandpoints();
+  drawKeypoints();
+  drawSkeleton();
 }
 
 function modelReady() {
@@ -154,5 +165,32 @@ function playSynth(note, vel) {
   let root = note * 0.5 + 50;
   // notes can overlap with each other
   polySynth.play(root, vel/240, 0, dur);
+}
+
+// A function to draw ellipses over the detected keypoints
+function drawKeypoints() {
+    // For the pose, loop through all the keypoints
+    for (let j = 0; j < pose.keypoints.length; j += 1) {
+      // A keypoint is an object describing a body part (like rightArm or leftShoulder)
+      const keypoint = pose.keypoints[j];
+      // Only draw an ellipse is the pose probability is bigger than 0.2
+      if (keypoint.score > 0.2) {
+        fill(255, 0, 0);
+        noStroke();
+        ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+      }
+    }
+}
+
+// A function to draw the skeletons
+function drawSkeleton() {
+    const skeleton = pose.skeleton;
+    // For the skeleton, loop through all body connections
+    for (let j = 0; j < skeleton.length; j += 1) {
+      const partA = skeleton[j][0];
+      const partB = skeleton[j][1];
+      stroke(255, 0, 0);
+      line(partA.position.x, partA.position.y, partB.position.x, partB.position.y);
+    }
 }
 
