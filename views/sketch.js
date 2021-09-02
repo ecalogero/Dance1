@@ -40,11 +40,11 @@ function setup() {
   inputVideo.size(frameWidth,frameHeight
     );
   inputVideo.hide();
-  outputVideo = createVideo(["./fingers.mov", "assets/fingers.webm"]);
+  outputVideo = createVideo(["./R_web_nosound.mp4", "assets/fingers.webm"]);
   outputVideo.hide();
-  inputAnalysis = createVideo(["./fingers.mov", "assets/fingers.webm"]);
+  inputAnalysis = createVideo(["./AJ_web_nosound.mp4", "assets/fingers.webm"]);
   inputAnalysis.hide();
-  outputAnalysis = createVideo(["./fingers.mov", "assets/fingers.webm"]);
+  outputAnalysis = createVideo(["./RD_web_nosound.mp4", "assets/fingers.webm"]);
   outputAnalysis.hide();
 
   //This creates the hand model using the ml5 library
@@ -73,7 +73,7 @@ function draw() {
   filter(GRAY);
   pop();
   image(inputVideo, 320, 0); // SCREEN 2
-  image(tree
+  //image(tree
     , 320, 240); // SCREEN 4
   //filter(POSTERIZE, 2);
   //drawHandpoints();
