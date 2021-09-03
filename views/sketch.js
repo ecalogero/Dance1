@@ -9,13 +9,18 @@ let tree;
 let polySynth;
 let isLooping = false;
 let isPlaying = false;
-let inputVideo, outputVideo, inputAnalysis, outputAnalysis;
+let inputVideo, rocksVideo, shortyGeorgeVideo, rustyDustysVideo, appleJacksVideo;
 let frameWidth = innerWidth/2;//320;
+
 let frameHeight = innerHeight/2;//240;
+const XDIM = 216;
+const YDIM = 384;
 let handpose, bodypose;
 let predictions = [];
 let oldprediction;
 let okeypoint = {};
+let poses = [];
+//let skeletons = [];
 
 window.preload = () => {
   soundFormats('mp3', 'ogg', 'wav', 'm4a');
@@ -24,7 +29,7 @@ window.preload = () => {
 }
 
 function setup() {
-  createCanvas(frameWidth*2, frameHeight*2);
+  createCanvas(1366, 768);
   colorMode(HSB, 255);
   inputVideo = createCapture(VIDEO);
   // inputVideo = createCapture({
@@ -37,28 +42,29 @@ function setup() {
   //   console.log('capture ready.')
   // });
   inputVideo.elt.setAttribute('playsinline', '');
-  inputVideo.size(frameWidth,frameHeight
-    );
+  inputVideo.size(502,376);
   inputVideo.hide();
-  outputVideo = createVideo(["./R_web_nosound.mp4", "assets/fingers.webm"]);
-  outputVideo.hide();
-  inputAnalysis = createVideo(["./AJ_web_nosound.mp4", "assets/fingers.webm"]);
-  inputAnalysis.hide();
-  outputAnalysis = createVideo(["./RD_web_nosound.mp4", "assets/fingers.webm"]);
-  outputAnalysis.hide();
+  rocksVideo = createVideo(["./R_web_nosound.mp4", "assets/fingers.webm"]);
+  rocksVideo.hide();
+  appleJacksVideo = createVideo(["./AJ_web_nosound.mp4", "assets/fingers.webm"]);
+  appleJacksVideo.hide();
+  rustyDustysVideo = createVideo(["./RD_web_nosound.mp4", "assets/fingers.webm"]);
+  rustyDustysVideo.hide();
+  shortyGeorgeVideo = createVideo(["./SG_web_nosound.mp4", "assets/fingers.webm"]);
+  shortyGeorgeVideo.hide();
 
   //This creates the hand model using the ml5 library
   //handpose = ml5.handpose(inputVideo, modelReady);
   
   //Here is the one to track a body instead of a hand.
-  bodypose = ml5.poseNet(inputVideo, single, modelReady);
+  bodypose = ml5.poseNet(inputVideo, modelReady);
   // This sets up an event that fills the global variable "predictions"
     // with an array every time new hand poses are detected
   // handpose.on("pose", results => {
   //   predictions = results;
   // });
   bodypose.on("pose", results => {
-    pose = results;
+    poses = results;
     console.log(results);
   });
   background(150);
@@ -66,15 +72,18 @@ function setup() {
 }
 
 function draw() {
-  
   push();
-  image(inputAnalysis, 0, 0); // SCREEN 1
-  image(outputVideo, 0, 240); //  SCREEN 3
+  image(rocksVideo, 0, 0); // SCREEN 1
+  image(rustyDustysVideo, XDIM, 0); // SCREEN 2
+  image(shortyGeorgeVideo, XDIM*2, 0);  // SCREEN 3
+  image(appleJacksVideo, XDIM*3, 0);  // SCREEN 4
+  image(inputVideo, XDIM*4, 0);  // SCREEN 5
   filter(GRAY);
   pop();
-  image(inputVideo, 320, 0); // SCREEN 2
-  //image(tree
-    , 320, 240); // SCREEN 4
+  image(rocksVideo, 0, YDIM); // SCREEN 6
+  image(rustyDustysVideo, XDIM, YDIM); // SCREEN 7
+  image(shortyGeorgeVideo, XDIM*2, YDIM);  // SCREEN 8
+  image(appleJacksVideo, XDIM*3, YDIM);  // SCREEN 9
   //filter(POSTERIZE, 2);
   //drawHandpoints();
   drawKeypoints();
@@ -89,16 +98,18 @@ function mousePressed() {
   //mySound.play()
   if(isLooping){
     inputVideo.noLoop(); // set the video to loop and start playing
-    outputVideo.noLoop(); // set the video to loop and start playing
-    inputAnalysis.noLoop(); // set the video to loop and start playing
-    outputAnalysis.noLoop(); // set the video to loop and start playing
+    shortyGeorgeVideo.noLoop(); // set the video to loop and start playing
+    rocksVideo.noLoop(); // set the video to loop and start playing
+    rustyDustysVideo.noLoop(); // set the video to loop and start playing
+    appleJacksVideo.noLoop(); // set the video to loop and start playing
     isLooping = false;
     
   } else {
     inputVideo.loop(); // set the video to loop and start playing
-    outputVideo.loop(); // set the video to loop and start playing
-    inputAnalysis.loop(); // set the video to loop and start playing
-    outputAnalysis.loop(); // set the video to loop and start playing
+    shortyGeorgeVideo.loop(); // set the video to loop and start playing
+    rocksVideo.loop(); // set the video to loop and start playing
+    rustyDustysVideo.loop(); // set the video to loop and start playing
+    appleJacksVideo.loop();
     isLooping = true;
   }
 }
@@ -170,9 +181,10 @@ function playSynth(note, vel) {
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
     // For the pose, loop through all the keypoints
-    for (let j = 0; j < pose.keypoints.length; j += 1) {
+  if(!!poses.length){
+    for (let j = 0; j < poses.keypoints.length; j += 1) {
       // A keypoint is an object describing a body part (like rightArm or leftShoulder)
-      const keypoint = pose.keypoints[j];
+      const keypoint = poses.keypoints[j];
       // Only draw an ellipse is the pose probability is bigger than 0.2
       if (keypoint.score > 0.2) {
         fill(255, 0, 0);
@@ -180,11 +192,15 @@ function drawKeypoints() {
         ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
       }
     }
+  } else {
+    console.log("No poses detected")
+  }
 }
 
 // A function to draw the skeletons
 function drawSkeleton() {
-    const skeleton = pose.skeleton;
+  if(!!poses.length){
+    const skeleton = poses.skeleton;
     // For the skeleton, loop through all body connections
     for (let j = 0; j < skeleton.length; j += 1) {
       const partA = skeleton[j][0];
@@ -192,5 +208,8 @@ function drawSkeleton() {
       stroke(255, 0, 0);
       line(partA.position.x, partA.position.y, partB.position.x, partB.position.y);
     }
+  } else {
+    console.log("Not able to draw skeleton")
+  }
 }
 
