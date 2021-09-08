@@ -5,7 +5,12 @@
 <body>
     <div>Teachable Machine Pose Model</div>
     <button type='button' onclick='init()'>Start</button>
-    <div><canvas id='canvas'></canvas></div>
+    <div><canvas id='canvas'></canvas>
+    <video class='rusty_dusty' src="./RD_web_nosound.mov" hidden></video>
+    <video class='rocks' src="./R_web_nosound.mov" hidden></video>
+    <video class='shorty_george' src="./SG_web_nosound.mov" hidden></video>
+    <video class='apple_jacks' src="./AJ_web_nosound.mov" hidden></video>
+    </div>
     <div id='label-container'></div>
 
 
@@ -17,6 +22,11 @@
     const URL = 'https://teachablemachine.withgoogle.com/models/gzCmxF6vb/';
     let model, webcam, ctx, labelContainer, maxPredictions;
 
+    const rocksVideo = document.querySelector('.rocks');
+    const rustyDVideo = document.querySelector(".rusty_dusty");
+    const shortyGVideo = document.querySelector(".shorty_george");
+    const appleJVideo = document.querySelector(".apple_jacks");
+
     async function init() {
         const modelURL = URL + 'model.json';
         const metadataURL = URL + 'metadata.json';
@@ -27,14 +37,14 @@
         maxPredictions = model.getTotalClasses();
         // Convenience function to setup a webcam
         const flip = true; // whether to flip the webcam
-        webcam = new tmPose.Webcam(200, 200, flip); // width, height, flip
+        webcam = new tmPose.Webcam(376, 376, flip); // width, height, flip
         await webcam.setup(); // request access to the webcam
         webcam.play();
         window.requestAnimationFrame(loop);
 
         // append/get elements to the DOM
         const canvas = document.getElementById('canvas');
-        canvas.width = 200; canvas.height = 200;
+        canvas.width = 1366; canvas.height = 768;
         ctx = canvas.getContext('2d');
         labelContainer = document.getElementById('label-container');
         for (let i = 0; i < maxPredictions; i++) { // and class labels
@@ -66,14 +76,30 @@
     }
 
     function drawPose(pose) {
-        ctx.drawImage(webcam.canvas, 0, 0);
+        ctx.drawImage(rocksVideo, 0, 0);
+        ctx.drawImage(rustyDVideo, 216, 0);
+        ctx.drawImage(shortyGVideo, 432, 0);
+        ctx.drawImage(appleJVideo, 648, 0);
+        ctx.drawImage(webcam.canvas, 864, 0);
+        ctx.translate(864, 0);
         // draw the keypoints and skeleton
         if (pose) {
             const minPartConfidence = 0.5;
             tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
             tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
         }
+        ctx.translate(-864, 0);
+        ctx.drawImage(rocksVideo, 0, 376);
+        ctx.drawImage(rustyDVideo, 216, 376);
+        ctx.drawImage(shortyGVideo, 432, 376);
+        ctx.drawImage(appleJVideo, 648, 376);
     }
+
+    document.addEventListener("click", ()=>{
+        rocksVideo.play();
+        rustyDVideo.play();
+        shortyGVideo.play();
+        appleJVideo.play();})
 </script>
 
 </body></html>
