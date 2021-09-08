@@ -22,14 +22,17 @@ let okeypoint = {};
 let poses = [];
 //let skeletons = [];
 
-window.preload = () => {
-  soundFormats('mp3', 'ogg', 'wav', 'm4a');
-  mySound = loadSound("/1", () => {console.log("loaded audio");});
-  tree = loadImage("https://loremflickr.com/320/240/tree", () => {console.log("loaded flickr");});
-}
+const URL = 'https://teachablemachine.withgoogle.com/models/gzCmxF6vb/';
+let model, webcam, ctx, labelContainer, maxPredictions, pose, posenetOutput;
+
+// window.preload = () => {
+//   soundFormats('mp3', 'ogg', 'wav', 'm4a');
+//   mySound = loadSound("/1", () => {console.log("loaded audio");});
+// }
 
 function setup() {
-  createCanvas(1366, 768);
+  ctx = createCanvas(1366, 768);
+  //console.log("setup ctx: ", ctx)
   colorMode(HSB, 255);
   inputVideo = createCapture(VIDEO);
   // inputVideo = createCapture({
@@ -42,7 +45,7 @@ function setup() {
   //   console.log('capture ready.')
   // });
   inputVideo.elt.setAttribute('playsinline', '');
-  inputVideo.size(502,376);
+  inputVideo.size(376,376);
   inputVideo.hide();
   rocksVideo = createVideo(["./R_web_nosound.mp4", "assets/fingers.webm"]);
   rocksVideo.hide();
@@ -57,18 +60,40 @@ function setup() {
   //handpose = ml5.handpose(inputVideo, modelReady);
   
   //Here is the one to track a body instead of a hand.
-  bodypose = ml5.poseNet(inputVideo, modelReady);
+  ///bodypose = ml5.poseNet(inputVideo, modelReady);
   // This sets up an event that fills the global variable "predictions"
     // with an array every time new hand poses are detected
   // handpose.on("pose", results => {
   //   predictions = results;
   // });
-  bodypose.on("pose", results => {
-    poses = results;
-    console.log(results);
-  });
+ 
+
+        const modelURL = URL + 'model.json';
+        const metadataURL = URL + 'metadata.json';
+
+        // load the model and metadata
+        // Refer to tmPose.loadFromFiles() in the API to support files from a file picker
+        model = tmPose.load(modelURL, metadataURL);
+        maxPredictions = function(){model.getTotalClasses()};
+
+        // Convenience function to setup a webcam
+        // const flip = true; // whether to flip the webcam
+        // webcam = new tmPose.Webcam(200, 200, flip); // width, height, flip
+        // webcam.setup(); // request access to the webcam
+        // webcam.play();
+        // window.requestAnimationFrame(loop);
+
+        // append/get elements to the DOM
+        //const canvas = document.getElementById('canvas');
+        //canvas.width = 200; canvas.height = 200;
+        //ctx = canvas.getContext('2d');
+        labelContainer = document.getElementById('label-container');
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement('div'));
+        }
+
   background(150);
-  polySynth = new p5.PolySynth();
+  //polySynth = new p5.PolySynth();
 }
 
 function draw() {
@@ -86,8 +111,9 @@ function draw() {
   image(appleJacksVideo, XDIM*3, YDIM);  // SCREEN 9
   //filter(POSTERIZE, 2);
   //drawHandpoints();
-  drawKeypoints();
-  drawSkeleton();
+  //drawKeypoints();
+  //drawSkeleton();
+  predict();
 }
 
 function modelReady() {
@@ -132,7 +158,9 @@ function keyTyped() {
   // return false;
 }
 
-
+function setMaxPredictions(){
+  
+}
 // A function to draw ellipses and labels over the detected keypoints
 function drawHandpoints() {
   //console.log("predictions length: ", predictions.length);
@@ -182,18 +210,20 @@ function playSynth(note, vel) {
 function drawKeypoints() {
     // For the pose, loop through all the keypoints
   if(!!poses.length){
-    for (let j = 0; j < poses.keypoints.length; j += 1) {
+    console.log("number of poses: ", poses.length)
+    for (let j = 0; j < poses[0].pose.keypoints.length; j += 1) {
       // A keypoint is an object describing a body part (like rightArm or leftShoulder)
-      const keypoint = poses.keypoints[j];
+      const keypoint = poses[0].pose.keypoints[j];
+      //console.log("drawKeypoints: x position:", keypoint.position.x);
       // Only draw an ellipse is the pose probability is bigger than 0.2
       if (keypoint.score > 0.2) {
         fill(255, 0, 0);
         noStroke();
-        ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+        ellipse(keypoint.position.x + XDIM*4, keypoint.position.y, 10, 10);
       }
     }
   } else {
-    console.log("No poses detected")
+    //console.log("No poses detected")
   }
 }
 
@@ -209,7 +239,39 @@ function drawSkeleton() {
       line(partA.position.x, partA.position.y, partB.position.x, partB.position.y);
     }
   } else {
-    console.log("Not able to draw skeleton")
+    //console.log("Not able to draw skeleton")
+  }
+}
+
+async function predict() {
+  // Prediction #1: run input through posenet
+  // estimatePose can take in an image, video or canvas html element
+  const result = await model.estimatePose.call(ctx);
+  console.log("result after:", result)
+  pose = result.pose;
+  posenetOutput = result.posenetOutput;
+  // Prediction 2: run input through teachable machine classification model
+  const prediction = function(){ model.predict(posenetOutput)};
+
+  for (let i = 0; i < maxPredictions; i++) {
+      const classPrediction =
+          prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
+      labelContainer.childNodes[i].innerHTML = classPrediction;
+  }
+  console.log("predict(): pose: ", pose);
+  // finally draw the poses
+  drawPose(pose);
+}
+
+function drawPose(pose) {
+  const myImage = function(){ctx.drawImage(ctx, XDIM*4, 0)};
+  console.log("drawpose(pose): ", pose);
+  // draw the keypoints and skeleton
+  if (pose) {
+    
+      const minPartConfidence = 0.5;
+      tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+      tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
   }
 }
 
