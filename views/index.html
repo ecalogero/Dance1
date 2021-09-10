@@ -3,16 +3,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.3/dist/teachablemachine-pose.min.js"></script>
 </head>
 <body>
-    <div>Jazz Gestures: try to match the moves</div>
-    <button type='button' onclick='init()'>Start</button>
-    <div><canvas id='canvas'></canvas>
+    <h1>Jazz Gestures: try to match the moves</h1>
+    <button class='CTA-button' type='button' onclick='init()'>Start</button>
+    <section><canvas id='canvas'></canvas>
     <video class="video" id='rusty_dusty' src="RD_web_nosound.mp4" hidden='true' loop></video>
     <video class="video" id='rocks' src="./R_web_nosound.mp4" hidden='true' loop></video>
     <video class="video" id='shorty_george' src="./SG_web_nosound.mp4" hidden='true' loop></video>
     <video class="video" id='apple_jacks' src="./AJ_web_nosound.mp4" hidden='true' loop></video>
-    </div>
+    </section>
     <div id='label-container'></div>
 
+    <style>
+        h1{
+            font-size: xx-large;
+            font-family: 'Helvetica';
+        }
+        .CTA-button{
+            position:absolute;
+        }
+        section{
+            display: flexbox;
+        }
+    </style>
 
     <script type="text/javascript">
     // More API functions here:
