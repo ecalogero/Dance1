@@ -1,17 +1,169 @@
 <!DOCTYPE html><html lang="en"><head>
-    <script src="p5.js"></script>
-    <!-- <script src="p5.sound.min.js"></script> -->
-    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.3/dist/teachablemachine-pose.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <meta charset="utf-8">
-  </head>
-  <body>
-    
-    <script src="sketch.js"></script>
+</head>
+<body>
+    <div>Jazz Gestures: try to match the moves</div>
+    <button type='button' onclick='init()'>Start</button>
+    <div><canvas id='canvas'></canvas>
+    <video class="video" id='rusty_dusty' src="RD_web_nosound.mp4" hidden='true'></video>
+    <video class="video" id='rocks' src="./R_web_nosound.mp4" hidden='true'></video>
+    <video class="video" id='shorty_george' src="./SG_web_nosound.mp4" hidden='true'></video>
+    <video class="video" id='apple_jacks' src="./AJ_web_nosound.mp4" hidden='true'></video>
+    </div>
     <div id='label-container'></div>
-  
+
+
+    <script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/pose
+    var tempNameSpace = {};
+    // the link to your model provided by Teachable Machine export panel
+    const URL = 'https://teachablemachine.withgoogle.com/models/gzCmxF6vb/';
+    const modelURL = URL + 'model.json';
+    const metadataURL = URL + 'metadata.json';
+    const vWidth = 216;
+    const vHeight = 376;
+    let model, webcam, ctx, labelContainer, maxPredictions;
+
+    let state = {
+        prediction: "none",
+        loading: true,
+        predictionX: null,
+        predictionY: null
+    };
+
+    const canvas = document.getElementById('canvas');
+    canvas.width = 1366; canvas.height = 768;
+    ctx = canvas.getContext('2d');
+    labelContainer = document.getElementById('label-container');
+
+    tempNameSpace.rocks = {xpos: 0, ypos: 0};
+    tempNameSpace.rusty = {xpos: 216, ypos: 0};
+    tempNameSpace.shorty = {xpos: 432, ypos: 0};
+    tempNameSpace.apple = {xpos: 648, ypos: 0};
+    const rocksVideo = document.getElementById('rocks');
+    const rustyDVideo = document.getElementById("rusty_dusty");
+    const shortyGVideo = document.getElementById("shorty_george");
+    const appleJVideo = document.getElementById("apple_jacks");
+
+    async function init() {
+        // load the model and metadata
+        // Refer to tmPose.loadFromFiles() in the API to support files from a file picker
+        model = await tmPose.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+        // Convenience function to setup a webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmPose.Webcam(376, 376, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        webcam.play();
+        rocksVideo.play();
+        rustyDVideo.play();
+        shortyGVideo.play();
+        appleJVideo.play();
+        rocksVideo.setAttribute('crossOrigin', '');
+        rustyDVideo.setAttribute('crossOrigin', '');
+        shortyGVideo.setAttribute('crossOrigin', '');
+        appleJVideo.setAttribute('crossOrigin', '');
+        window.requestAnimationFrame(loop);
+
+        // append/get elements to the DOM
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement('div'));
+        }
+    }
+
+    async function loop(timestamp) {
+        webcam.update(); // update the webcam frame
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    async function predict() {
+        // Prediction #1: run input through posenet
+        // estimatePose can take in an image, video or canvas html element
+        const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+        // Prediction 2: run input through teachable machine classification model
+        const prediction = await model.predict(posenetOutput);
+        let maxConfidence = 0;
+        for (let i = 0; i < maxPredictions; i++) {
+            const probability = prediction[i].probability.toFixed(2);
+            //const classPrediction = prediction[i].className + ': ' + probability;
+            //labelContainer.childNodes[i].innerHTML = classPrediction;
+            let nameArr = "";
+            let name = "";
+            if(probability > 0.75 && probability > maxConfidence){
+                state.prediction = prediction[i].className;
+                nameArr = state.prediction.split(" ");
+                name = nameArr[0].toLowerCase();
+                if(tempNameSpace[name]){state.predictionX = tempNameSpace[name].xpos;}//the xvalue of the video of the same name as the className
+                if(tempNameSpace[name]){state.predictionY = tempNameSpace[name].ypos;//the yvalue of the video of the same name as the className
+                }
+            }
+            if(probability > maxConfidence){maxConfidence = probability}
+        }
+        // finally draw the poses
+        drawPose(pose);
+    }
+
+    function drawPose(pose) {
+
+        ctx.fillRect(864,376,376, 384);
+        ctx.drawImage(rocksVideo, 0, 0);
+        ctx.drawImage(rustyDVideo, 216, 0);
+        ctx.drawImage(shortyGVideo, 432, 0);
+        ctx.drawImage(appleJVideo, 648, 0);
+        ctx.drawImage(webcam.canvas, 864, 0);
+        ctx.save();
+        ctx.translate(864, 0);
+        // draw the keypoints and skeleton
+        if (pose) {
+            const minPartConfidence = 0.5;
+            tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+            tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+        }
+        ctx.restore();
+        ctx.drawImage(rocksVideo, 0, 376);
+        ctx.drawImage(rustyDVideo, 216, 376);
+        ctx.drawImage(shortyGVideo, 432, 376);
+        ctx.drawImage(appleJVideo, 648, 376);
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'white';
+        ctx.font = '30px Helvetica';
+        ctx.fillText(state.prediction, 940, 440);
+        ctx.fillStyle = 'black';
+        //setTimeout(snapshot, 10000)
+        //console.log(typeof(state.predictionX))
+        if(state.prediction !== "none" && typeof(state.predictionX) === "number"){
+            let pixels = ctx.getImageData(state.predictionX, state.predictionY, vWidth, vHeight);
+            pixels = invert(pixels);
+            ctx.putImageData(pixels, state.predictionX, state.predictionY);
+        }
+    }
+
+    function invert(pixels){
+        for (let i = 0; i < pixels.data.length; i+=4) {
+            pixels.data[i + 0] = 255 - pixels.data[i + 0]; // RED
+            pixels.data[i + 1] = 255 - pixels.data[i + 1]; // GREEN
+            pixels.data[i + 2] = 255 - pixels.data[i + 2]; // Blue
+        }
+        return pixels;
+    }
+
+    function snapshot(){
+        const data = canvas.toDataURL('image/jpg');
+        const link = document.createElement('a');
+        link.href = data;
+        link.setAttribute('download', 'snapshot');
+        link.innerHTML = `<img src="${data}" alt="snapshot"/>`;
+        labelContainer.appendChild(link);
+    }
+
+    // document.addEventListener("click", ()=>{
+    //     rocksVideo.play();
+    //     rustyDVideo.play();
+    //     shortyGVideo.play();
+    //     appleJVideo.play();})
+</script>
 
 </body></html>
