@@ -3,8 +3,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.3/dist/teachablemachine-pose.min.js"></script>
 </head>
 <body>
+    <nav>
     <h1>Jazz Gestures: try to match the moves</h1>
     <button class='CTA-button' type='button' onclick='init()'>Start</button>
+    </nav>
     <section><canvas id='canvas'></canvas>
     <video class="video" id='rusty_dusty' src="RD_web_nosound.mp4" hidden='true' loop></video>
     <video class="video" id='rocks' src="./R_web_nosound.mp4" hidden='true' loop></video>
@@ -14,24 +16,29 @@
     <div id='label-container'></div>
 
     <style>
+        nav{
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            align-content: center;
+        }
         h1{
             font-size: xx-large;
             font-family: 'Helvetica';
         }
         .CTA-button{
             position:absolute;
-            right: 0px;
-            top: 0px;
+            right: 24px;
+            top: 24px;
             background-color: black;
             color: white;
-            border-radius: 16px;
             border-style: none;
+            padding: 16px;
         }
         section{
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100vw;
+            background-color: black;
             align-items: center;
         }
     </style>
