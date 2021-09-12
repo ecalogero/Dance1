@@ -1,11 +1,14 @@
 <!DOCTYPE html><html lang="en"><head>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8.3/dist/teachablemachine-pose.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Limelight&family=Open+Sans:wght@300&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav>
-    <h1>Jazz Gestures: try to match the moves</h1>
-    <button class='CTA-button' type='button' onclick='init()'>Start</button>
+    <h1>jazz gestures: match the moves</h1>
+    <button class='CTA-button' type='button' onclick='init()'>start</button>
     </nav>
     <section><canvas id='canvas'></canvas>
     <video class="video" id='rusty_dusty' src="RD_web_nosound.mp4" hidden='true' loop></video>
@@ -16,6 +19,11 @@
     <div id='label-container'></div>
 
     <style>
+        html, body{
+            padding: 0px;
+            margin: 0px;
+
+        }
         nav{
             display: flex;
             flex-direction: row;
@@ -24,7 +32,7 @@
         }
         h1{
             font-size: xx-large;
-            font-family: 'Helvetica';
+            font-family: 'Limelight', cursive;
         }
         .CTA-button{
             position:absolute;
@@ -34,6 +42,7 @@
             color: white;
             border-style: none;
             padding: 16px;
+            font-family: 'Open Sans', sans-serif;
         }
         section{
             display: flex;
