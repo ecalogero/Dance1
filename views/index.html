@@ -11,9 +11,9 @@
     <button class='CTA-button' type='button' onclick='init()'>start</button>
     </nav>
     <section><canvas id='canvas'></canvas>
-        <audio id='music' preload='auto' loop>
+        <!-- <audio id='music' preload='auto' loop>
             <source src='./Dont_Go_Way_Nobody.mp3' type='audio/mp3'/>
-        </audio>
+        </audio> -->
         <video class="video" id='rusty_dusty' src="RD_web_nosound.mp4" hidden='true' loop></video>
         <video class="video" id='rocks' src="./R_web_nosound.mp4" hidden='true' loop></video>
         <video class="video" id='shorty_george' src="./SG_web_nosound.mp4" hidden='true' loop></video>
@@ -88,7 +88,7 @@
     const rustyDVideo = document.getElementById("rusty_dusty");
     const shortyGVideo = document.getElementById("shorty_george");
     const appleJVideo = document.getElementById("apple_jacks");
-    const music = document.getElementById("music");
+    //const music = document.getElementById("music");
 
     async function init() {
         // load the model and metadata
@@ -104,7 +104,7 @@
         rustyDVideo.play();
         shortyGVideo.play();
         appleJVideo.play();
-        music.play();
+        //music.play();
         rocksVideo.setAttribute('crossOrigin', '');
         rustyDVideo.setAttribute('crossOrigin', '');
         shortyGVideo.setAttribute('crossOrigin', '');
